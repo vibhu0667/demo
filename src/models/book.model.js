@@ -1,0 +1,42 @@
+const mongoose=require('mongoose')
+
+const bookSchema=new mongoose.Schema({
+ bname:{
+    type:String,
+    trim:true,
+ },
+ author:{
+    type:String,
+ },
+createdBy:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user', 
+},
+price:{
+type:Number
+},
+stock:{
+   type: Number,
+},
+quantity: {
+   type: Number,
+   default: 1,
+ },
+type:{
+   type:String,
+ },
+ isdeleted:{
+   type: Boolean,
+ },
+ createdAt:{
+    type: Date,
+    default: Date.now
+ }
+},{
+    timeStamp:true,
+    versionKey:false,
+}
+
+)
+const Book=mongoose.model('book',bookSchema);
+module.exports = Book;  
