@@ -28,7 +28,7 @@ router.get("/listbook", userAuth(), userAuthRoleBase("admin"),listBooks);
 router.put("/updatebook",  userAuth(),userAuthRoleBase("admin"),updateBook);
 router.delete("/deletebook",  userAuth(),userAuthRoleBase("admin"),softDeleteBook);
 
-router.post("/addtocart",userAuth(),userAuthRoleBase("admin"),addToCart );
+router.post("/addtocart",userAuth(),userAuthRoleBase("admin"),addToCart);
 
 
 
