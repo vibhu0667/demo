@@ -11,7 +11,7 @@ const {
 const { userAuth, } = require("../middleware/auth");
 const { createBook ,softDeleteBook,updateBook,listBooks} = require("../controllers/book.controller");
 const { userAuthRoleBase } = require("../middleware/role.auth");
-const { addToCart,getTotalPrice } = require("../controllers/purchase.controller");
+const { addToCart } = require("../controllers/purchase.controller");
 
 const router = express();
 
@@ -29,7 +29,7 @@ router.put("/updatebook",  userAuth(),userAuthRoleBase("admin"),updateBook);
 router.delete("/deletebook",  userAuth(),userAuthRoleBase("admin"),softDeleteBook);
 
 router.post("/addtocart",userAuth(),userAuthRoleBase("admin"),addToCart );
-router.get("/total", userAuth(), userAuthRoleBase("admin"),getTotalPrice);
+
 
 
 
