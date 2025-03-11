@@ -14,12 +14,14 @@ const cartSchema = new mongoose.Schema(
           ref: "book",
           required: true,
         },
- 
+        quantity: {
+          type: Number, // Change to Number instead of String
+          required: true,
+          min: 1,
+        },
       },
     ],
-  
   },
-  
   {
     timestamps: true,
     versionKey: false,

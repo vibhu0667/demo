@@ -6,13 +6,13 @@ const createBook = async (req, res) => {
   try {
 
     const user = req.user 
-    const { bname, author, type,price,stock } = req.body;
+    const { bname, author, type,price,totalstock } = req.body;
     const newBook = new Book({
       bname,
       author,
       type,
       price,
-      stock,
+      totalstock,
       createdBy: user,
       createdAt: new Date(),
     });

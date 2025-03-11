@@ -15,8 +15,8 @@ createdBy:{
 price:{
 type:Number
 },
-stock:{
-   type: Number,
+totalstock:{
+   type:Number,
 },
 quantity: {
    type: Number,

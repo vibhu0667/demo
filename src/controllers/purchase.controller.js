@@ -1,51 +1,51 @@
 const Cart = require("../models/purchase.model");
 const Book = require("../models/book.model");
 
-// Add to Cart
 const addToCart = async (req, res) => {
   try {
-    const userId = req.user
-    const {  bookId, quantity } = req.body;
+    const userId = req.user;
+    const { bookId, quantity } = req.body;
 
-    // Check if the book exists
-    const book = await Book.findById(bookId);
-    if (!book) {
-      return res.status(404).json({ message: "Book not found" });
+    const parsedQuantity = Number(quantity);
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+      return res.status(400).json({ message: "Invalid quantity" });
     }
 
-    // Check if enough stock is available
-    if (book.stock < quantity) {
+    const book = await Book.findById(bookId);
+    if (!book) return res.status(404).json({ message: "Book not found" });
+
+    
+    if (book.totalstock < parsedQuantity) {
       return res.status(400).json({ message: "Not enough stock available" });
     }
+  
+    let cart = await Cart.findOne({ userId }) || new Cart({ userId, items: [] });
 
-    let cart = await Cart.findOne({ userId });
+    const itemIndex = cart.items.findIndex((item) => item.bookId.toString() === bookId);
 
-    if (!cart) {
-      cart = new Cart({ userId, items: [{ bookId, quantity }] });
+    if (itemIndex > -1) {
+      cart.items[itemIndex].quantity += parsedQuantity;
     } else {
-      const itemIndex = cart.items.findIndex((item) => item.bookId.toString() === bookId);
-      if (itemIndex > -1) {
-        cart.items[itemIndex].quantity += quantity;
-      } else {
-        cart.items.push({ bookId, quantity });
-      }
+      cart.items.push({ bookId, quantity: parsedQuantity });
     }
 
-    // Deduct the stock
-    book.stock -= quantity;
-    await book.save();
-    await cart.save();
-   
-    // Check if stock reaches zero
-    if (book.stock === 0) {
-      console.log(`Book '${book.bname}' is now out of stock.`); // Log message (replace with SMS logic if needed)
-    }
+    book.totalstock -= parsedQuantity;
+    await Promise.all([book.save(), cart.save()]);
 
-    res.status(200).json({ message: "Book added to cart", cart, });
+    const message = book.totalstock === 0
+      ? `Book '${book.bname}' is now out of stock`
+      : "Book added to cart";
+
+    console.log(message);
+    res.status(200).json({ message, cart });
+
   } catch (error) {
+    console.error("Error in addToCart:", error);
     res.status(500).json({ message: "Server Error", error });
   }
 };
+
+
 
 // Get total price of cart
 const getTotalPrice = async (req, res) => {
