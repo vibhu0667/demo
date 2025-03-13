@@ -34,7 +34,7 @@ const register = async (req, res) => {
       token,
     };
     const data = await User.create(filter);
-    return res.status(200).json({ data: data, message: "created done" });
+    return res.status(200).json({ name: data.name, message: `created user name is ${data.name}` });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
@@ -68,12 +68,11 @@ const login = async (req, res) => {
 
     user.token = token;
     await user.save();
-
+user.name;
     res.status(200).json({
-      message: "Login successful",
+      message: `Login successful and login username is  ${user.name}`,
       success: true,
-      user,
-  
+        user:user.email,  
       status: 200,
     });
   } catch (error) {
@@ -83,24 +82,31 @@ const login = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    let updatedData = { ...req.body };
-
-    if (updatedData.password) {
-      const salt = await bcrypt.genSalt(10);
-      updatedData.password = await bcrypt.hash(updatedData.password, salt);
-    }
-
+    const { email, name, mobile } = req.body;
+    // if (!email && !name && !mobile) {
+    //   return res.status(400).json({ message: "At least one field is required for update" });
+    // }
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
-      updatedData,
-      { new: true }       
+      { $set: { email, name, mobile } },
+      { new: true, runValidators: true } 
     );
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({
+      message: "User updated successfully",
+      updatedUser:{
+        name: updatedUser.name,
+        email: updatedUser.email,
+      },
+    });
 
-    res.status(200).json({ data: updatedUser, message: "User updated successfully" });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
+
 
 // const fetchListById = async (req, res) => {
 //   try {
@@ -126,13 +132,14 @@ const updateUser = async (req, res) => {
 
 const fetchList = async (req, res) => {
   try {
-    console.log("user", req.user);
+    // console.log("user", req.user);
   
     const page = parseInt(req.query.page) || 1; // Default to page 1
     const limit = parseInt(req.query.limit) || 10; // Default to 10 users per page
     const skip = (page - 1) * limit; // Calculate skip value
 
-    const users = await User.find() 
+    const users = await User.find()
+    .select("name email") 
       .skip(skip)
       .limit(limit);
       
@@ -168,7 +175,7 @@ const deleteUser = async (req, res) => {
         $merge: { into: "users", whenMatched: "merge", whenNotMatched: "discard" } 
       }
     ];
-console.log(deletedAt,"deletedAt");
+// console.log(deletedAt,"deletedAt");
 
     await User.aggregate(aggregationPipeline);
 
@@ -180,7 +187,7 @@ console.log(deletedAt,"deletedAt");
 
     return res.status(200).json({
       message: "User soft deleted successfully",
-      user: updatedUser
+       name:updatedUser.name
     });
 
   } catch (error) {
@@ -194,14 +201,58 @@ try {
    await User.find({user});
   return res.status(200).json({
     message: "You Can Show Profile With Login User",
-    user: user
+    user:{ name:user.name,email:user.email,_id:user.id}
   });
 } catch (error) {
   
 }
 }
 
+const logout = async (req, res) => {
+  try {
+    res.clearCookie("authToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+    });
 
+    await User.findByIdAndUpdate(req.user._id, { token: null });
+
+    return res.status(200).json({
+      message: "Logout successful",
+      success: true,
+      status: 200,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Logout failed", error: error.message });
+  }
+};
+
+
+
+const changePass = async (req, res) => {
+  try {
+    const user = req.user;
+    const { password, confirmpass } = req.body;
+
+    if (!password || !confirmpass) {
+      return res.status(400).json({ message: "Both password fields are required" });
+    }
+
+    if (password !== confirmpass) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+
+    const saltRounds = 10; 
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    user.password = hashedPassword; 
+    await user.save(); 
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
+};
 
 
 
@@ -214,5 +265,6 @@ module.exports = {
   updateUser,
   deleteUser,
   myProfile,
-
+  logout,
+  changePass
 };

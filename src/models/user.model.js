@@ -17,9 +17,16 @@ role:{
    type:String,
    enum:['user','admin']
  },
- mobile:{
-    type:Number,  //10 digits only
-    minlength:10,
+ mobile: {
+   type: Number,
+   required: true,
+   unique: true,
+   validate: {
+     validator: function (v) {
+       return /^[0-9]{10}$/.test(v.toString()); // Ensures exactly 10 digits
+     },
+     message: (props) => `${props.value} is not a valid 10-digit mobile number!`,
+   },
  },
  isdeleted:{
    type: Boolean,

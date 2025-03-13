@@ -65,7 +65,11 @@ const addToCart = async (req, res) => {
       message += ` (BOGO applied: ${quantity} Free)`;
     }
 
-    res.status(200).json({ message, cart });
+    const populatedCart = await Cart.findById(cart._id)
+    .populate("userId", "name email") 
+    .populate("items.bookId", "bname price");
+
+  res.status(200).json({ message, cart: populatedCart });
 
   } catch (error) {
     console.error("Error in addToCart:", error);
@@ -113,7 +117,24 @@ const removeFromCart = async (req, res) => {
   }
 };
 
+const myCard = async (req, res) => {
+  try {
+    const user = req.user; 
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized: Please log in" });
+    }
+
+    const cart = await Cart.find({ userId: user._id }); 
+
+    if (!cart.length) {
+      return res.status(404).json({ message: "No items found in your cart" });
+    }
+
+    res.status(200).json({ message: "Your Cart", cart });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error });
+  }
+};
 
 
-
-module.exports = { addToCart,removeFromCart };
+module.exports = { addToCart,removeFromCart,myCard };

@@ -1,0 +1,75 @@
+mongosh
+
+show.dbs
+
+use Test
+
+db.users.find()
+
+db.users.find({name: "Parth"})
+
+db.users.find({isHardDelete: false})
+
+db.users.find({status : active })
+
+
+db.users.countDocuments()
+
+db.users.find({}, {name: 1, _id: 0})  Sirf names dikhayega (ID hide karega)
+
+db.users.insertOne({firstName: "Akash", city: "Delhi"}) 
+
+db.users.insertMany([
+  {name: "Rahul", age: 30, city: "Mumbai"},
+  {name: "Pooja", age: 22, city: "Pune"}
+]) 
+
+
+db.users.updateOne({name: "Amit"}, {$set: {gender: "Male"}}) 
+
+db.users.updateMany({}, {$set: {status: "Active"}})  
+
+db.users.find({city: "Delhi"}).limit(2) 
+
+db.users.aggregate([
+  {$group: {_id: "$city", totalUsers: {$sum: 1}}}
+])  //City ke hisaab se total users count karega
+
+
+
+
+
+Find Users which is soft deleted
+db.users.find({isHardDelete: false})
+
+Find User which is active
+db.users.find({status : active })
+
+Find Latest created user
+db.users.find().sort({createdAt: -1}).limit(1)
+
+ Find those users which is created from this month
+db.users.find({
+  createdAt: {
+    $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),  # Current month ka first day
+    $lt: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)  # Next month ka first day
+  }
+})
+
+
+ Find those user which has this region:
+db.users.find(
+  { regions: { $type: "array" } }, 
+  { _id: 1 }
+)
+
+- Find those users which has role is: 6631da934df918e13b5e346d
+db.users.find(
+  { role: ObjectId("6631da934df918e13b5e346d") }, 
+  { _id: 1 }
+)
+
+
+
+
+
