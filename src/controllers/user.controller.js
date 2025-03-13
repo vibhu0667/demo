@@ -59,11 +59,10 @@ const login = async (req, res) => {
 
     const token = jwt.sign(payload, scretKey, { expiresIn: "1000m" });
 
-    // Set token in cookie
     res.cookie("authToken", token, {
       httpOnly: true, // Secure cookie, not accessible via JavaScript
       secure: process.env.NODE_ENV === "production", // Secure in production
-      sameSite: "Strict", // CSRF protection
+      sameSite: "Strict",
       maxAge: 1000 * 60 * 60 * 24, // 1 day expiry
     });
 
@@ -74,7 +73,7 @@ const login = async (req, res) => {
       message: "Login successful",
       success: true,
       user,
-      token,
+  
       status: 200,
     });
   } catch (error) {
@@ -133,7 +132,7 @@ const fetchList = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // Default to 10 users per page
     const skip = (page - 1) * limit; // Calculate skip value
 
-    const users = await User.find() // Fetch only active users
+    const users = await User.find() 
       .skip(skip)
       .limit(limit);
       
@@ -169,6 +168,7 @@ const deleteUser = async (req, res) => {
         $merge: { into: "users", whenMatched: "merge", whenNotMatched: "discard" } 
       }
     ];
+console.log(deletedAt,"deletedAt");
 
     await User.aggregate(aggregationPipeline);
 
@@ -188,6 +188,22 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const myProfile = async(req,res)=>{
+try {
+  const user = req.user
+   await User.find({user});
+  return res.status(200).json({
+    message: "You Can Show Profile With Login User",
+    user: user
+  });
+} catch (error) {
+  
+}
+}
+
+
+
+
 
 
 
@@ -197,4 +213,6 @@ module.exports = {
   login,
   updateUser,
   deleteUser,
+  myProfile,
+
 };

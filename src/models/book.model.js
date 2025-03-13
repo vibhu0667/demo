@@ -28,10 +28,14 @@ type:{
  isdeleted:{
    type: Boolean,
  },
+ image:{
+   type:String
+ },
  createdAt:{
     type: Date,
     default: Date.now
- }
+ },
+ 
 },{
     timeStamp:true,
     versionKey:false,

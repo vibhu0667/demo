@@ -2,22 +2,31 @@ const Book = require("../models/book.model");
 const User = require("../models/user.model");
 const moment = require("moment");
 
+// const { cloudinary } = require("../helpers/cloudinary");
+
+
 const createBook = async (req, res) => {
   try {
+    const user = req.user;
+    const { bname, author, type, price, totalstock } = req.body;
 
-    const user = req.user 
-    const { bname, author, type,price,totalstock } = req.body;
+   
+    let imageUrl = "";
+    if (req.file) {
+      imageUrl = req.file.path;
+    }
+
     const newBook = new Book({
       bname,
       author,
       type,
       price,
       totalstock,
+      image: imageUrl, 
       createdBy: user,
       createdAt: new Date(),
     });
 
-   
     const savedBook = await newBook.save();
 
     return res.status(201).json({ data: savedBook, message: "Book created successfully" });
